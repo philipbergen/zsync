@@ -318,11 +318,18 @@ int fetch_remaining_blocks_http(struct zsync_state *z, const char *url,
     {   /* Get a set of byte ranges that we need to complete the target */
         int nrange;
         off_t *zbyterange = zsync_needed_byte_ranges(z, &nrange, type);
-        if (!zbyterange)
+        if (!zbyterange) {
+            fprintf(stderr, "Ranges could not be determined.\n");
             return 1;
-        if (nrange == 0)
+        }
+        if (nrange == 0) {
+            printf("No ranges found.\n");
             return 0;
-
+        }
+        printf("Found %d ranges:\n", nrange);
+        for(int i=0;i<nrange*2;i+=2) {
+            printf("\t%d-%d\n", zbyterange[i], zbyterange[i+1]);
+        }
         /* And give that to the range fetcher */
         range_fetch_addranges(rf, zbyterange, nrange);
         free(zbyterange);

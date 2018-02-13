@@ -349,6 +349,8 @@ int range_fetch_expect( struct range_fetch *rf, off_t from, off_t to ) {
         return -1;
     }
 
+    fprintf(stderr, "GOT RANGE %d - %d\n", from, to);
+
     /* If this isn't the next range in the sequence, this is an error. */
     if( rf->ranges_todo[2*rf->rangesdone] != from || rf->ranges_todo[2*rf->rangesdone+1] != to ) {
         fprintf( stderr,
