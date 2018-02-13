@@ -66,6 +66,8 @@ The simplest way to compile this package is:
 Compilers and Options
 =====================
 
+   Ubuntu library for curl: sudo apt-get install libcurl4-gnutls-dev
+
    Some systems require unusual options for compilation or linking that
 the `configure' script does not know about.  Run `./configure --help'
 for details on some of the pertinent environment variables.
