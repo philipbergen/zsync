@@ -1,11 +1,10 @@
-
 /*
  *   zsync - client side rsync over http
  *   Copyright (C) 2004,2005,2007,2009 Colin Phipps <cph@moria.org.uk>
  *
  *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the Artistic License v2 (see the accompanying 
- *   file COPYING for the full license terms), or, at your option, any later 
+ *   it under the terms of the Artistic License v2 (see the accompanying
+ *   file COPYING for the full license terms), or, at your option, any later
  *   version of the same license.
  *
  *   This program is distributed in the hope that it will be useful,
@@ -282,7 +281,7 @@ static float calc_zsync_progress(const struct zsync_state *zs) {
 /* fetch_remaining_blocks_http(zs, url, type)
  * For the given zsync_state, using the given URL (which is a copy of the
  * actual content of the target file is type == 0, or a compressed copy of it
- * if type == 1), retrieve the parts of the target that are currently missing. 
+ * if type == 1), retrieve the parts of the target that are currently missing.
  * Returns zero if this URL was useful, nonzero if we crashed and burned.
  */
 int fetch_remaining_blocks_http(struct zsync_state *z, const char *url,
@@ -363,7 +362,7 @@ int fetch_remaining_blocks_http(struct zsync_state *z, const char *url,
 
 /* fetch_remaining_blocks(zs)
  * Using the URLs in the supplied zsync state, downloads data to complete the
- * target file. 
+ * target file.
  */
 int fetch_remaining_blocks(struct zsync_state *zs) {
     int n, utype;
@@ -407,7 +406,7 @@ static int set_mtime(char* filename, time_t mtime) {
         perror("stat");
         return -1;
     }
-    
+
     /* Set the modification time. */
     u.actime = s.st_atime;
     u.modtime = mtime;
@@ -440,23 +439,14 @@ int main(int argc, char **argv) {
                 {               /* Scan string as hostname=username:password */
                     char *p = strdup(optarg);
                     char *q = strchr(p, '=');
-                    char *r = q ? strchr(q, ':') : NULL;
 
-                    if (!q || !r) {
-                        fprintf(stderr,
-                                "-A takes hostname=username:password\n");
+                    if (!q) {
+                        fprintf(stderr, "-A takes hostname=username:password\n");
                         exit(1);
                     }
                     else {
-                        /* XXX - HTTP Auth not working right now */
-                        fprintf(stderr,
-                               "HTTP Authentication is not supported in this version\n");
-                        exit(1);
-
-                        /*
-                        *q++ = *r++ = 0;
-                        add_auth(p, q, r);
-                        */
+                        printf("Warning: only basic authentication is supported at the moment.\n");
+                        add_auth(q+1);
                     }
                 }
                 break;
@@ -690,7 +680,7 @@ int main(int argc, char **argv) {
              * the link below will catch any failure */
             unlink(oldfile_backup);
 
-            /* Try linking the filename to the backup file name, so we will 
+            /* Try linking the filename to the backup file name, so we will
                atomically replace the target file in the next step.
                If that fails due to EPERM, it is probably a filesystem that
                doesn't support hard-links - so try just renaming it to the

@@ -1,11 +1,10 @@
-
 /*
  *   zsync - client side rsync over http
  *   Copyright (C) 2004,2005,2007,2009 Colin Phipps <cph@moria.org.uk>
  *
  *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the Artistic License v2 (see the accompanying 
- *   file COPYING for the full license terms), or, at your option, any later 
+ *   it under the terms of the Artistic License v2 (see the accompanying
+ *   file COPYING for the full license terms), or, at your option, any later
  *   version of the same license.
  *
  *   This program is distributed in the hope that it will be useful,
@@ -47,9 +46,8 @@
 
 #include <curl/curl.h>
 
-/* Settings for HTTP connections - auth details */
-static char **auth_details; /* This is a realloced array with 3*num_auth_details entries */
-static int num_auth_details; /* The groups of 3 strings are host, user, pass */
+/* Settings for HTTP connections - auth details (user:pass) */
+static char *auth_details = NULL;
 
 /* Remember .zsync control file URL */
 char *referer;
@@ -76,16 +74,11 @@ long use_timeout = 0;
 /* Declare up here so we can use it in make_curl_handle */
 int range_fetch_sockoptcallback( void *clientp, curl_socket_t curlfd, curlsocktype purpose );
 
-/* add_auth(host, user, pass)
- * Specify user & password combination to use connecting to the given host.
+/*
+ * Specify user & password combination to use connecting.
  */
-void add_auth(char *host, char *user, char *pass) {
-    auth_details =
-        realloc(auth_details, (num_auth_details + 1) * sizeof *auth_details);
-    auth_details[num_auth_details * 3] = host;
-    auth_details[num_auth_details * 3 + 1] = user;
-    auth_details[num_auth_details * 3 + 2] = pass;
-    num_auth_details++;
+void add_auth(char *userpass) {
+    auth_details = userpass;
 }
 
 /* Get a curl easy handle based on our global options. Returns NULL on failure */
@@ -175,6 +168,15 @@ CURL *make_curl_handle() {
         curl_easy_setopt( curl, CURLOPT_TIMEOUT, use_timeout );
     }
 
+    /*    curl_easy_setopt( curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC );
+    curl_easy_setopt( curl, CURLOPT_USERPWD,
+                      "CcLapLKm:MRUCEaHt+k8+mjyUptp7D6ar6P7Yx+gDxWWKQOo/0yoE");
+    */
+    if (auth_details) {
+        /* Set the headers for BASIC authentication */
+        curl_easy_setopt( curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC );
+        curl_easy_setopt( curl, CURLOPT_USERPWD, auth_details);
+    }
     return curl;
 }
 
@@ -207,7 +209,7 @@ int parse_content_range( char *buf, size_t len, off_t *from, off_t *to ) {
  *
  * XXX: When tfname is set, non-curl version downloaded into a ".part" file and
  *      then rename(1)ed
- * XXX: When tfname is set, non-curl version used If-Modified-Since, 
+ * XXX: When tfname is set, non-curl version used If-Modified-Since,
  *      If-Unmodified-Since, and Range to resume transfers on the .part file
  * XXX: Non-curl version had a progress meter
  */
