@@ -365,6 +365,7 @@ int range_fetch_expect( struct range_fetch *rf, off_t from, off_t to ) {
         return -1;
     }
 
+    printf("LOOKS GOOD: %d - %d\n", from , to);
     /* Looks good. Set up block_left and offset. */
     rf->block_left = to + 1 - from;
     rf->offset = from;
@@ -789,7 +790,6 @@ int range_fetch_perform(struct range_fetch *rf) {
         chars = snprintf(request + l, sizeof(request) - l, OFF_T_PF "-" OFF_T_PF "%s",
                          rf->ranges_todo[2 * i], rf->ranges_todo[2 * i + 1],
                          lastrange ? "" : ",");
-
         if( chars >= (int)sizeof(request) - l ) {
             /* Overflow. Extremely unlikely given max_range_per_request. */
             fprintf(stderr, "Overflow setting up Range header!\n");
@@ -808,6 +808,8 @@ int range_fetch_perform(struct range_fetch *rf) {
         /* Nothing to do. Done! */
         return 0;
     }
+
+    printf("\nREQUEST:%s\n\n", request);
 
     /* Need to ask curl to send these ranges */
     curl_easy_setopt( rf->curl, CURLOPT_RANGE, NULL );
@@ -832,7 +834,7 @@ int range_fetch_perform(struct range_fetch *rf) {
 
     /* If we did not get back all the ranges we wanted, consider it an error */
     if( rf->rangessent != rf->rangesdone ) {
-        fprintf( stderr, "Missing ranges in response from server!\n" );
+      fprintf( stderr, "Missing ranges in response from server! (%d/%d)\n", rf->rangessent, rf->rangesdone );
         return -1;
     }
 

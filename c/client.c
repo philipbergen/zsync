@@ -42,25 +42,64 @@
 /* For curl_global_init, curl_global_cleanup */
 #include <curl/curl.h>
 
-/* FILE* f = open_zcat_pipe(file_str)
+
+/* FILE* f = open_gzip_pipe(file_str)
  * Returns a (popen) filehandle which when read returns the un-gzipped content
  * of the given file. Or NULL on error; or the filehandle may fail to read. It
  * is up to the caller to call pclose() on the handle and check the return
  * value of that.
  */
-FILE* open_zcat_pipe(const char* fname)
+FILE* open_gzip_pipe(const char* fname)
 {
     /* Get buffer to build command line */
-    char *cmd = malloc(6 + strlen(fname) * 2);
+    const char *base="gzip -dc ";
+    char *cmd = malloc(strlen(base) + strlen(fname) * 2 + 1);
     if (!cmd)
         return NULL;
+    strcpy(cmd, base);
 
-    strcpy(cmd, "zcat ");
     {   /* Add filename to commandline, escaping any characters that the shell
          *might consider special. */
         int i, j;
 
-        for (i = 0, j = 5; fname[i]; i++) {
+        for (i = 0, j = strlen(cmd); fname[i]; i++) {
+            if (!isalnum(fname[i]))
+                cmd[j++] = '\\';
+            cmd[j++] = fname[i];
+        }
+        cmd[j] = 0;
+    }
+
+    if (!no_progress)
+        fprintf(stderr, "reading seed %s: ", cmd);
+    {   /* Finally, open the subshell for reading, and return the handle */
+        FILE* f = popen(cmd, "r");
+        free(cmd);
+        return f;
+    }
+}
+
+/* FILE* f = open_bzip2_pipe(file_str)
+ * Returns a (popen) filehandle which when read returns the un-gzipped content
+ * of the given file. Or NULL on error; or the filehandle may fail to read. It
+ * is up to the caller to call pclose() on the handle and check the return
+ * value of that.
+ */
+FILE* open_bzip2_pipe(const char* fname)
+{
+    // FIXME: Optimal bzip2 probably required
+    /* Get buffer to build command line */
+    const char *base="bzip2 -dc ";
+    char *cmd = malloc(strlen(base) + strlen(fname) * 2 + 1);
+    if (!cmd)
+        return NULL;
+    strcpy(cmd, base);
+
+    {   /* Add filename to commandline, escaping any characters that the shell
+         *might consider special. */
+        int i, j;
+
+        for (i = 0, j = strlen(cmd); fname[i]; i++) {
             if (!isalnum(fname[i]))
                 cmd[j++] = '\\';
             cmd[j++] = fname[i];
@@ -88,7 +127,27 @@ void read_seed_file(struct zsync_state *z, const char *fname) {
     if (zsync_hint_decompress(z) && strlen(fname) > 3
         && !strcmp(fname + strlen(fname) - 3, ".gz")) {
         /* Open for reading */
-        FILE *f = open_zcat_pipe(fname);
+        FILE *f = open_gzip_pipe(fname);
+        if (!f) {
+            perror("popen");
+            fprintf(stderr, "not using seed file %s\n", fname);
+        }
+        else {
+
+            /* Give the contents to libzsync to read and find any useful
+             * content */
+            zsync_submit_source_file(z, f, !no_progress);
+
+            /* Close and check for errors */
+            if (pclose(f) != 0) {
+                perror("close");
+            }
+        }
+    }
+    else if (zsync_hint_decompress(z) && strlen(fname) > 3
+        && !strcmp(fname + strlen(fname) - 4, ".bz2")) {
+        /* Open for reading */
+        FILE *f = open_bzip2_pipe(fname);
         if (!f) {
             perror("popen");
             fprintf(stderr, "not using seed file %s\n", fname);
@@ -326,13 +385,37 @@ int fetch_remaining_blocks_http(struct zsync_state *z, const char *url,
             printf("No ranges found.\n");
             return 0;
         }
+        unsigned int nrange_adj = 0, cap=1000;  // Yeah, I'm feeling lavish
+        off_t *zbyterange_adj = (off_t*)malloc(sizeof(off_t) * cap);
         printf("Found %d ranges:\n", nrange);
         for(int i=0;i<nrange*2;i+=2) {
-            printf("\t%d-%d\n", zbyterange[i], zbyterange[i+1]);
+          off_t a=zbyterange[i], b=zbyterange[i+1];
+          printf("\t%d-%d\n", a, b);
+          if ((a >> 17) != (b >> 17)) {
+            printf("\t\tCrosses 128kB barrier, will be split\n");
+          }
+          while (a<b) {
+            off_t c = (((a >> 17) + 1) << 17) - 1;
+            if (c > b) {
+              c = b;
+            }
+            if (a != zbyterange[i] || c!= zbyterange[i+1]) {
+              printf("\t\tSub range %d - %d\n", a, c);
+            }
+            zbyterange_adj[nrange_adj*2] = a;
+            zbyterange_adj[nrange_adj*2+1] = c;
+            nrange_adj ++;
+            if (nrange_adj * 2 >= cap) {
+              cap += 1000;
+              zbyterange_adj = (off_t*)realloc(zbyterange_adj, sizeof(off_t) * cap);
+            }
+            a = c + 1;
+          }
         }
         /* And give that to the range fetcher */
-        range_fetch_addranges(rf, zbyterange, nrange);
+        range_fetch_addranges(rf, zbyterange_adj, nrange_adj);
         free(zbyterange);
+        free(zbyterange_adj);
     }
 
     {
