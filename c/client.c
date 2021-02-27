@@ -807,8 +807,7 @@ int main(int argc, char **argv) {
     }
 
     /* Final stats and cleanup */
-    if (!no_progress)
-        printf("used %lld local, fetched %lld\n", local_used, http_down);
+    printf("\nused %lld local, fetched %lld\n", local_used, http_down);
     free(cacert);
     free(want_interface);
     free(referer);
