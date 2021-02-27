@@ -521,10 +521,43 @@ int main(int argc, char **argv) {
     time_t mtime;
 
     srand(getpid());
+    /* No progress display except on terminal */
+    if (!isatty(0))
+        no_progress = 1;
+
+
     {   /* Option parsing */
         int opt;
-        while ((opt = getopt(argc, argv, "A:k:o:i:Vsqvu:C:KT:I:R:S:")) != -1) {
+        while ((opt = getopt(argc, argv, "hA:z:o:i:Vspvu:C:kT:I:R:S:")) != -1) {
             switch (opt) {
+            case 'h':
+                {
+                    printf("Usage:\n"
+                           " zsync [-A CRED] [-z ZSAVE] [-o OUTPUT] [-i INFILE] [-C CACERT] [(-s|-p)]"
+                           " [-v] [-u URL] [-k] [-T TIMEOUT] [-I INTFACE] [-R SSLCERT] [-S SSLKEY] ZFILE\n"
+                           " zsync -V\n"
+                           );
+                    printf("Options:\n"
+                           " ZFILE       Path or URL to .zsync control file.\n"
+                           " -V          Print version.\n"
+                           " -A CRED     Format is <host>=<user>:<pass> and <host> is ignored.\n"
+                           " -z ZSAVE    Only if ZFILE is a URL, a local file to save "
+                           "retrieved zsync control file in.\n"
+                           " -o OUTPUT   Output file path. Defaults to what is in ZFILE.\n"
+                           " -i SEED     Seed file (previous version or partial file).\n"
+                           " -C CACERT   CA cert file name. Defaults to $ZSYNC_CA_BUNDLE.\n"
+                           " -s          Silent (no progress). Default for non-TTY.\n"
+                           " -p          Show progress. Default on fo TTY.\n"
+                           " -v          Be verbose.\n"
+                           " -u URL      Override source URL from ZFILE.\n"
+                           " -k          Accept insecure certificates.\n"
+                           " -T TIMEOUT  Timeout in seconds, default is infinite.\n"
+                           " -I INTFACE  Interface to want to use.\n"
+                           " -R SSLCERT  SSL certificate path.\n"
+                           " -S SSLKEY   SSL private key.\n"
+                           );
+                }
+                break;
             case 'A':           /* Authentication options for remote server */
                 {               /* Scan string as hostname=username:password */
                     char *p = strdup(optarg);
@@ -535,12 +568,14 @@ int main(int argc, char **argv) {
                         exit(1);
                     }
                     else {
-                        printf("Warning: only basic authentication is supported at the moment.\n");
+                        if (q != p) {
+                            printf("Warning: only basic authentication is supported at the moment.\n");
+                        }
                         add_auth(q+1);
                     }
                 }
                 break;
-            case 'k':
+            case 'z':
                 free(zfname);
                 zfname = strdup(optarg);
                 break;
@@ -553,11 +588,14 @@ int main(int argc, char **argv) {
                 break;
             case 'V':
                 printf(PACKAGE " v" VERSION " (compiled " __DATE__ " " __TIME__
-                       ")\n" "By Colin Phipps <cph@moria.org.uk>\n"
+                       ")\n" "By Philip Bergen <philip.bergen@gmail.com>\n"
+                       "Great Thanks to Colin Phipps <cph@moria.org.uk> for the original work!\n"
                        "Published under the Artistic License v2, see the COPYING file for details.\n");
                 exit(0);
+            case 'p':
+                no_progress = 0;
+                break;
             case 's':
-            case 'q':
                 no_progress = 1;
                 break;
             case 'v':
@@ -570,7 +608,7 @@ int main(int argc, char **argv) {
                 /* CA Cert path */
                 cacert = strdup(optarg);
                 break;
-            case 'K':
+            case 'k':
                 /* Insecure (disable SSL host/peer verification) */
                 be_insecure = 1;
                 break;
@@ -614,10 +652,6 @@ int main(int argc, char **argv) {
                 "Usage: zsync http://example.com/some/filename.zsync\n");
         exit(3);
     }
-
-    /* No progress display except on terminal */
-    if (!isatty(0))
-        no_progress = 1;
 
     /* Respect ZSYNC_CA_BUNDLE environment variable */
     if( !cacert ) {
@@ -702,8 +736,12 @@ int main(int argc, char **argv) {
          * that they probably messed up. */
         if (!local_used) {
             if (!no_progress)
-                fputs
-                    ("No relevent local data found - I will be downloading the whole file. If that's not what you want, CTRL-C out. You should specify the local file is the old version of the file to download with -i (you might have to decompress it with gzip -d first). Or perhaps you just have no data that helps download the file\n",
+                fputs("No relevent local data found - I will be downloading "
+                      "the whole file. If that's not what you want, CTRL-C "
+                      "out.\nYou should specify the local file is the old "
+                      "version of the file to download with -i (you might "
+                      "have to decompress it with gzip -d first). Or perhaps "
+                      "you just have no data that helps download the file\n",
                      stderr);
         }
     }

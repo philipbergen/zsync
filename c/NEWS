@@ -1,3 +1,16 @@
+Changes in 0.7.0
+- Forked from the original work on http://zsync.moria.org.uk
+- Maintained by Philip Bergen (philip.bergen<at>gmail.com)
+- Replaced the hand crafted http library with libcurl
+- Support https (SSL)
+- Support basic authentication with -A
+- Support xcode on macOS 10.15 (catalina)
+- Rudimentary build script in the c folder
+- Printing of efficiency (fetched vs reused)
+- Option -k ZFILE was renamed to -z ZFILE
+- Option -k is now insecure
+- Option -h for output usage help
+
 Changes in 0.6.2
 - fix for using zsync client on files >2GB on 32bit systems.
 - fix redirect handling.
@@ -15,7 +28,7 @@ Changes in 0.6.1
   size (1x or 2x blocksize)
 - use sequential_matches=1 when there is only one block; otherwise we're forced
   to transfer the whole file for files below 2kiB
-- fix librcksum handling of zsync streams with sequential_matches == 1; it was 
+- fix librcksum handling of zsync streams with sequential_matches == 1; it was
   giving false negatives when applying the rsync algorithm, resulting in poor
   use of local source data when sequential_matches == 1 (which didn't actually
   occur in any recent version of zsync)
@@ -96,7 +109,7 @@ Changes in 0.2.1
 - enabled zsync to handle gzip files containing stored (uncompressed) blocks (so we should do slightly better on gzipped binaries now - but this is still incomplete and will not work for all files)
 
 Changes in 0.2.0
-- major reduction in the size of the control file, due to some new optimisations 
+- major reduction in the size of the control file, due to some new optimisations
 - further fixes for servers refusing to do multipart/byteranges responses
 
 Changes in 0.1.6
@@ -150,4 +163,3 @@ Changes in 0.0.2
 - lots of bugfixes
 
 First release 0.0.1.
-
