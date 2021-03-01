@@ -594,7 +594,7 @@ size_t range_fetch_read_http_content( void *ptr, size_t size, size_t nmemb, void
     size_t len = size * nmemb;
 
     /* Make sure we're reading content from a 200 (ok) or 206 (partial content) */
-    printf("HTTP CODE: %d\n", rf->http_code);
+    //    printf("HTTP CODE: %d\n", rf->http_code);
     if( rf->http_code != 200 && rf->http_code != 206 ) {
         fprintf( stderr, "Expected HTTP 200 or 206 (partial content) but got code %d!\n", rf->http_code );
         return 0;
