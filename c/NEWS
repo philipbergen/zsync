@@ -10,6 +10,7 @@ Changes in 0.7.0
 - Option -k ZFILE was renamed to -z ZFILE
 - Option -k is now insecure
 - Option -h for output usage help
+- Option -vv for VERY verbose
 
 Changes in 0.6.2
 - fix for using zsync client on files >2GB on 32bit systems.

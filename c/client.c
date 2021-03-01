@@ -533,28 +533,30 @@ int main(int argc, char **argv) {
             case 'h':
                 {
                     printf("Usage:\n"
-                           " zsync [-A CRED] [-z ZSAVE] [-o OUTPUT] [-i INFILE] [-C CACERT] [(-s|-p)]"
-                           " [-v] [-u URL] [-k] [-T TIMEOUT] [-I INTFACE] [-R SSLCERT] [-S SSLKEY] ZFILE\n"
-                           " zsync -V\n"
+                           "  zsync [-A CRED] [-z ZSAVE] [-o OUTPUT] [-i INFILE] [-C CACERT] [(-s|-p)]"
+                           " [-v|-vv] [-u URL] [-k] [-T TIMEOUT] [-I INTFACE] [-R SSLCERT] [-S SSLKEY]"
+                           " ZFILE\n"
+                           "  zsync -V\n"
                            );
                     printf("Options:\n"
-                           " ZFILE       Path or URL to .zsync control file.\n"
-                           " -V          Print version.\n"
-                           " -A CRED     Format is <host>=<user>:<pass> and <host> is ignored.\n"
-                           " -z ZSAVE    Only if ZFILE is a URL, a local file to save "
+                           "  ZFILE       Path or URL to .zsync control file.\n"
+                           "  -V          Print version.\n"
+                           "  -A CRED     Format is <host>=<user>:<pass> and <host> is ignored.\n"
+                           "  -z ZSAVE    Only if ZFILE is a URL, a local file to save "
                            "retrieved zsync control file in.\n"
-                           " -o OUTPUT   Output file path. Defaults to what is in ZFILE.\n"
-                           " -i SEED     Seed file (previous version or partial file).\n"
-                           " -C CACERT   CA cert file name. Defaults to $ZSYNC_CA_BUNDLE.\n"
-                           " -s          Silent (no progress). Default for non-TTY.\n"
-                           " -p          Show progress. Default on fo TTY.\n"
-                           " -v          Be verbose.\n"
-                           " -u URL      Override source URL from ZFILE.\n"
-                           " -k          Accept insecure certificates.\n"
-                           " -T TIMEOUT  Timeout in seconds, default is infinite.\n"
-                           " -I INTFACE  Interface to want to use.\n"
-                           " -R SSLCERT  SSL certificate path.\n"
-                           " -S SSLKEY   SSL private key.\n"
+                           "  -o OUTPUT   Output file path. Defaults to what is in ZFILE.\n"
+                           "  -i SEED     Seed file (previous version or partial file).\n"
+                           "  -C CACERT   CA cert file name. Defaults to $ZSYNC_CA_BUNDLE.\n"
+                           "  -s          Silent (no progress). Default for non-TTY.\n"
+                           "  -p          Show progress. Default on fo TTY.\n"
+                           "  -v          Be verbose.\n"
+                           "  -v -v       Be VERY verbose.\n"
+                           "  -u URL      Override source URL from ZFILE.\n"
+                           "  -k          Accept insecure certificates.\n"
+                           "  -T TIMEOUT  Timeout in seconds, default is infinite.\n"
+                           "  -I INTFACE  Interface to want to use.\n"
+                           "  -R SSLCERT  SSL certificate path.\n"
+                           "  -S SSLKEY   SSL private key.\n"
                            );
                 }
                 break;
@@ -599,7 +601,7 @@ int main(int argc, char **argv) {
                 no_progress = 1;
                 break;
             case 'v':
-                be_verbose = 1;
+                be_verbose += 1;
                 break;
             case 'u':
                 referer = strdup(optarg);

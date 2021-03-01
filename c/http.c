@@ -82,6 +82,78 @@ void add_auth(char *userpass) {
     auth_details = userpass;
 }
 
+
+static
+void dump(const char *text,
+          FILE *stream, unsigned char *ptr, size_t size)
+{
+  size_t i;
+  size_t c;
+  unsigned int width=0x10;
+
+  fprintf(stream, "%s, %10.10ld bytes (0x%8.8lx)\n",
+          text, (long)size, (long)size);
+
+  for(i=0; i<size; i+= width) {
+    fprintf(stream, "%4.4lx: ", (long)i);
+
+    /* show hex to the left */
+    for(c = 0; c < width; c++) {
+      if(i+c < size)
+        fprintf(stream, "%02x ", ptr[i+c]);
+      else
+        fputs("   ", stream);
+    }
+
+    /* show data on the right */
+    for(c = 0; (c < width) && (i+c < size); c++) {
+      char x = (ptr[i+c] >= 0x20 && ptr[i+c] < 0x80) ? ptr[i+c] : '.';
+      fputc(x, stream);
+    }
+
+    fputc('\n', stream); /* newline */
+  }
+}
+
+static
+int my_trace(CURL *handle, curl_infotype type,
+             char *data, size_t size,
+             void *userp)
+{
+  const char *text;
+  (void)handle; /* prevent compiler warning */
+  (void)userp;
+
+  switch (type) {
+  case CURLINFO_TEXT:
+    fprintf(stderr, "== Info: %s", data);
+  default: /* in case a new one is introduced to shock us */
+    return 0;
+
+  case CURLINFO_HEADER_OUT:
+    text = "=> Send header";
+    break;
+  case CURLINFO_DATA_OUT:
+    text = "=> Send data";
+    break;
+  case CURLINFO_SSL_DATA_OUT:
+    text = "=> Send SSL data";
+    break;
+  case CURLINFO_HEADER_IN:
+    text = "<= Recv header";
+    break;
+  case CURLINFO_DATA_IN:
+    text = "<= Recv data";
+    break;
+  case CURLINFO_SSL_DATA_IN:
+    text = "<= Recv SSL data";
+    break;
+  }
+
+  dump(text, stderr, (unsigned char *)data, size);
+  return 0;
+}
+
 /* Get a curl easy handle based on our global options. Returns NULL on failure */
 CURL *make_curl_handle() {
     CURL *curl;
@@ -117,6 +189,9 @@ CURL *make_curl_handle() {
     if(be_verbose) {
         /* -v */
         curl_easy_setopt( curl, CURLOPT_VERBOSE, 1 );
+        if (be_verbose > 1) {
+            curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, my_trace);
+        }
     }
 
     if(cacert) {
@@ -401,7 +476,10 @@ size_t range_fetch_read_http_headers( void *ptr, size_t size, size_t nmemb, void
     rf->bytes_down += len;
 
     /* Look for HTTP status line */
-    if( len >= strlen("HTTP/1.1 XXX") && memcmp(buf, "HTTP/1.1 ", strlen("HTTP/1.1 ")) == 0 ) {
+    if( len >= strlen("HTTP/1 XXX") &&
+        (memcmp(buf, "HTTP/2 ", strlen("HTTP/2 ")) == 0
+         || memcmp(buf, "HTTP/1.1 ", strlen("HTTP/1.1 ")) == 0)
+        ) {
 
         /* If previous HTTP code was 2xx, something bad is happening. We should only get
          * one 2xx (previous codes in this request chain would have been redirects, if anything) */
@@ -516,6 +594,7 @@ size_t range_fetch_read_http_content( void *ptr, size_t size, size_t nmemb, void
     size_t len = size * nmemb;
 
     /* Make sure we're reading content from a 200 (ok) or 206 (partial content) */
+    printf("HTTP CODE: %d\n", rf->http_code);
     if( rf->http_code != 200 && rf->http_code != 206 ) {
         fprintf( stderr, "Expected HTTP 200 or 206 (partial content) but got code %d!\n", rf->http_code );
         return 0;
