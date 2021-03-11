@@ -11,7 +11,7 @@ elif [ ! -f /etc/os-release ]; then
      exit 1
 else
     source /etc/os-release
-    trg_ext="$ID"
+    trg_ext=".$ID"
 fi
 
 echo "Building $trg_ext..."
