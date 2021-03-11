@@ -391,11 +391,11 @@ int fetch_remaining_blocks_http(struct zsync_state *z, const char *url,
         for(int i=0;i<nrange*2;i+=2) {
           off_t a=zbyterange[i], b=zbyterange[i+1];
           printf("\t%d-%d\n", a, b);
-          if ((a >> 17) != (b >> 17)) {
-            printf("\t\tCrosses 128kB barrier, will be split\n");
+          if ((a >> 23) != (b >> 23)) {
+            printf("\t\tCrosses 8MB barrier, will be split\n");
           }
           while (a<b) {
-            off_t c = (((a >> 17) + 1) << 17) - 1;
+            off_t c = (((a >> 23) + 1) << 23) - 1;
             if (c > b) {
               c = b;
             }

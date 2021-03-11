@@ -1,3 +1,6 @@
+Changes in 0.7.1
+- Changed maximum range size from 128kB to 8MB
+
 Changes in 0.7.0
 - Forked from the original work on http://zsync.moria.org.uk
 - Maintained by Philip Bergen (philip.bergen<at>gmail.com)

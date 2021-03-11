@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([zsync],[0.7.0],[http://zsync.moria.org.uk/])
+AC_INIT([zsync],[0.7.1],[http://zsync.moria.org.uk/])
 
 AC_CONFIG_SRCDIR([client.c])
 AC_CONFIG_AUX_DIR([autotools])
@@ -67,4 +67,3 @@ AC_SUBST(ac_aux_dir)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile librcksum/Makefile zlib/Makefile libzsync/Makefile doc/Makefile])
 AC_OUTPUT
-

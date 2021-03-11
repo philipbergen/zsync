@@ -1,4 +1,4 @@
-zsync 0.7.0
+zsync 0.7.1
 ===========
 
 zsync is a file transfer program. It allows you to download a file from a
@@ -80,7 +80,7 @@ cd /var/www/downloads/
 zsyncmake -u 'http://example.com/downloads/big-0.2.tar.gz' big-0.2.tar.gz
 
 This creates big-0.2.tar.zsync in the same directory, and specifies the URL
-from which users can see the file.  
+from which users can see the file.
 
 A user with v0.1 of the same file can now use zsync to download only the new
 bits:
@@ -140,4 +140,3 @@ saul@alien-science.org, Kent Mein, Marc Lehmann, Robert Lemmen, Mark Adler,
 Ricardo Correia, Karl Kalleberg, Michael Stone, Richard Lucassen, Duncan
 Mac-Vicar, Jari Aalto, Marcin Mirosław, Jan Varho and Loïc Minier for useful
 feedback and bug reports for previous versions.
-
