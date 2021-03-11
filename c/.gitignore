@@ -1,0 +1,16 @@
+*~
+#*#
+*.o
+*.a
+*.in
+*.m4
+Makefile
+/zsync
+/zsyncmake
+.deps
+/config.*
+/configure
+/autom4te.cache
+/stamp-h1
+md4test
+sha1test
