@@ -70,7 +70,11 @@ int be_insecure = 0;
 int be_verbose = 0;
 
 /* Should we tell curl to set a timeout? */
-long use_timeout = 0;
+long use_timeout = 300;
+
+long speed_limit = 10000;
+long speed_time  = 10;
+long connection_timeout = 15;
 
 /* Declare up here so we can use it in make_curl_handle */
 int range_fetch_sockoptcallback( void *clientp, curl_socket_t curlfd, curlsocktype purpose );
@@ -242,6 +246,18 @@ CURL *make_curl_handle() {
     if(use_timeout) {
         /* -T */
         curl_easy_setopt( curl, CURLOPT_TIMEOUT, use_timeout );
+    }
+    if(connection_timeout) {
+        /* -t */
+        curl_easy_setopt( curl, CURLOPT_CONNECTTIMEOUT, connection_timeout );
+    }
+    if(speed_time) {
+        /* -y */
+        curl_easy_setopt( curl, CURLOPT_LOW_SPEED_TIME, speed_time );
+    }
+    if(speed_limit) {
+        /* -Y */
+        curl_easy_setopt( curl, CURLOPT_LOW_SPEED_LIMIT, speed_limit );
     }
 
     /*    curl_easy_setopt( curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC );

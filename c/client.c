@@ -507,6 +507,19 @@ static int set_mtime(char* filename, time_t mtime) {
     return 0;
 }
 
+long parse_int_arg(const char *optarg, char opt) {
+    char *endptr = NULL;
+    long res;
+    errno = 0;
+    res = strtol( optarg, &endptr, 10 );
+    if( errno || *endptr != 0 || use_timeout < 0 ) {
+        /* Unable to convert, garbage at the end of the string, or number was negative */
+        fprintf( stderr, "-%c: Invalid number `%s'\n", opt, optarg );
+        exit(1);
+    }
+    return res;
+}
+
 /****************************************************************************
  *
  * Main program */
@@ -528,7 +541,7 @@ int main(int argc, char **argv) {
 
     {   /* Option parsing */
         int opt;
-        while ((opt = getopt(argc, argv, "hA:z:o:i:Vspvu:C:kT:I:R:S:")) != -1) {
+        while ((opt = getopt(argc, argv, "hA:z:o:i:Vspvu:C:kT:t:Y:y:I:R:S:")) != -1) {
             switch (opt) {
             case 'h':
                 {
@@ -545,15 +558,18 @@ int main(int argc, char **argv) {
                            "  -z ZSAVE    Only if ZFILE is a URL, a local file to save "
                            "retrieved zsync control file in.\n"
                            "  -o OUTPUT   Output file path. Defaults to what is in ZFILE.\n"
+                           "  -u URL      Override source URL from ZFILE.\n"
+                           "  -y TIME     Curl speed-time option. Default 10\n"
+                           "  -Y LIMIT    Curl speed-limit option. Default 10000\n"
+                           "  -t CONNECT  Connection timeout in seconds. Default is 15\n"
+                           "  -T TIMEOUT  Timeout in seconds, zero is infinite. Default is 300\n"
                            "  -i SEED     Seed file (previous version or partial file).\n"
                            "  -C CACERT   CA cert file name. Defaults to $ZSYNC_CA_BUNDLE.\n"
+                           "  -k          Accept insecure certificates.\n"
                            "  -s          Silent (no progress). Default for non-TTY.\n"
                            "  -p          Show progress. Default on fo TTY.\n"
                            "  -v          Be verbose.\n"
                            "  -v -v       Be VERY verbose.\n"
-                           "  -u URL      Override source URL from ZFILE.\n"
-                           "  -k          Accept insecure certificates.\n"
-                           "  -T TIMEOUT  Timeout in seconds, default is infinite.\n"
                            "  -I INTFACE  Interface to want to use.\n"
                            "  -R SSLCERT  SSL certificate path.\n"
                            "  -S SSLKEY   SSL private key.\n"
@@ -625,14 +641,25 @@ int main(int argc, char **argv) {
             case 'T':
                 /* Timeout */
                 {
-                    char *endptr = NULL;
-                    errno = 0;
-                    use_timeout = strtol( optarg, &endptr, 10 );
-                    if( errno || *endptr != 0 || use_timeout < 0 ) {
-                        /* Unable to convert, garbage at the end of the string, or number was negative */
-                        fprintf( stderr, "Timeout (-T): Invalid number `%s'\n", optarg );
-                        exit(1);
-                    }
+                    use_timeout = parse_int_arg(optarg, opt);
+                }
+                break;
+            case 't':
+                /* Timeout */
+                {
+                    connection_timeout = parse_int_arg(optarg, opt);
+                }
+                break;
+            case 'y':
+                /* Timeout */
+                {
+                    speed_time = parse_int_arg(optarg, opt);
+                }
+                break;
+            case 'Y':
+                /* Timeout */
+                {
+                    speed_limit = parse_int_arg(optarg, opt);
                 }
                 break;
             case 'I':

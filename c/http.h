@@ -26,6 +26,9 @@ extern char *sslkey;
 extern int be_insecure;
 extern int be_verbose;
 extern long use_timeout;
+extern long connection_timeout;
+extern long speed_time;
+extern long speed_limit;
 
 FILE* http_get(const char *orig_url, char **track_referer, const char *tfname);
 

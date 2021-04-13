@@ -1,3 +1,10 @@
+Changes in 0.8
+- Change default timeout from inf to 300s
+- Set default connection timeout to 15s
+- Set default speed time to 10s
+- Set default speed limit to 10000 b/s
+- Add command line switches -y, -Y, -t for speed time, speed limit, connection timeout
+
 Changes in 0.7.1
 - Changed maximum range size from 128kB to 8MB
 
