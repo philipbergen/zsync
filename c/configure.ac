@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([zsync],[0.8],[http://zsync.moria.org.uk/])
+AC_INIT([zsync],[0.8.1],[http://zsync.moria.org.uk/])
 
 AC_CONFIG_SRCDIR([client.c])
 AC_CONFIG_AUX_DIR([autotools])

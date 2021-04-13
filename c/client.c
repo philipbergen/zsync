@@ -573,6 +573,8 @@ int main(int argc, char **argv) {
                            "  -I INTFACE  Interface to want to use.\n"
                            "  -R SSLCERT  SSL certificate path.\n"
                            "  -S SSLKEY   SSL private key.\n"
+                           "Notes:\n"
+                           "  * Only basic authentication is supported.\n"
                            );
                 }
                 break;
@@ -586,9 +588,6 @@ int main(int argc, char **argv) {
                         exit(1);
                     }
                     else {
-                        if (q != p) {
-                            printf("Warning: only basic authentication is supported at the moment.\n");
-                        }
                         add_auth(q+1);
                     }
                 }

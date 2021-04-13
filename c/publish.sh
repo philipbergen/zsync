@@ -16,7 +16,7 @@ fi
 
 echo "Building $trg_ext..."
 
-rm -f configure
+git clean -xf .
 ./build.sh
 
 echo "Publishing $trg_ext..."
