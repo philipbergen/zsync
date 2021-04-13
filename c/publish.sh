@@ -5,7 +5,7 @@ echo "Remember to update version in:"
 echo "  vim NEWS README configure.ac doc/zsync.1 doc/zsyncmake.1"
 
 if [ $(uname) = Darwin ]; then
-    trg_ext='.Darwin'
+    trg_ext='.darwin'
 elif [ ! -f /etc/os-release ]; then
      echo "ERROR: Unsupported platform."
      exit 1
